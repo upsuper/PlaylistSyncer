@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="progress_background">#cccccc</color>
+    <color name="progress_foreground">#0099cc</color>
+
+</resources>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".SyncActivity" >
+
+    <ImageView
+        android:id="@+id/image_status"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="5dp"
+        android:src="@drawable/ic_pending" />
+
+    <TextView
+        android:id="@+id/text_filename"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/image_status"
+        android:layout_toLeftOf="@+id/text_progress"
+        android:layout_toRightOf="@+id/image_status"
+        android:layout_marginRight="5dp"
+        android:ellipsize="end"
+        android:textSize="16sp"
+        android:singleLine="true"
+        android:text="" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="2dp"
+        android:layout_alignBottom="@+id/image_status"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@+id/image_status"
+        android:progressDrawable="@drawable/progress"
+        android:max="100"
+        android:progress="50" />
+
+    <TextView
+        android:id="@+id/text_filesize"
+        style="@style/Text.Appearance.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/image_status"
+        android:layout_alignRight="@+id/progress_bar"
+        android:layout_marginBottom="7dp"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/text_progress"
+        style="@style/Text.Appearance.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/text_filesize"
+        android:layout_toLeftOf="@+id/text_filesize"
+        android:layout_marginRight="7dp"
+        android:text="" />
+
+</RelativeLayout>
