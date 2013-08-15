@@ -17,7 +17,6 @@
 		0B6C90A7178C135900970498 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0B6C90A5178C135900970498 /* MainMenu.xib */; };
 		0B8E48AC17B672DB008F48B7 /* NSURL+relativePath.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B8E48AB17B672DB008F48B7 /* NSURL+relativePath.m */; };
 		0BC77AE9178DA6F40040D00B /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BC77AE6178DA6F40040D00B /* GCDAsyncSocket.m */; };
-		0BC77AEA178DA6F40040D00B /* GCDAsyncUdpSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BC77AE8178DA6F40040D00B /* GCDAsyncUdpSocket.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,8 +40,6 @@
 		0B8E48AB17B672DB008F48B7 /* NSURL+relativePath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURL+relativePath.m"; sourceTree = "<group>"; };
 		0BC77AE5178DA6F40040D00B /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocket.h; sourceTree = "<group>"; };
 		0BC77AE6178DA6F40040D00B /* GCDAsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncSocket.m; sourceTree = "<group>"; };
-		0BC77AE7178DA6F40040D00B /* GCDAsyncUdpSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncUdpSocket.h; sourceTree = "<group>"; };
-		0BC77AE8178DA6F40040D00B /* GCDAsyncUdpSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncUdpSocket.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -128,8 +125,6 @@
 			children = (
 				0BC77AE5178DA6F40040D00B /* GCDAsyncSocket.h */,
 				0BC77AE6178DA6F40040D00B /* GCDAsyncSocket.m */,
-				0BC77AE7178DA6F40040D00B /* GCDAsyncUdpSocket.h */,
-				0BC77AE8178DA6F40040D00B /* GCDAsyncUdpSocket.m */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -201,7 +196,6 @@
 				0B6C909D178C135800970498 /* main.m in Sources */,
 				0B6C90A4178C135800970498 /* AppDelegate.m in Sources */,
 				0BC77AE9178DA6F40040D00B /* GCDAsyncSocket.m in Sources */,
-				0BC77AEA178DA6F40040D00B /* GCDAsyncUdpSocket.m in Sources */,
 				0B8E48AC17B672DB008F48B7 /* NSURL+relativePath.m in Sources */,
 				0B18599017B8E3AC00C98709 /* NSString+UTF8Data.m in Sources */,
 			);
