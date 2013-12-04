@@ -17,6 +17,7 @@ enum {
     kTagFileList,
     kTagDownloadRequest,
     kTagSendFile,
+    kTagSendFileHash,
     kTagSendPlaylist,
 };
 
@@ -92,7 +93,6 @@ NSString *trimString(NSString *string)
     }
     [self.trackTable reloadData];
 
-    listenSocket = [[GCDAsyncSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
     [self publishService];
 }
 
@@ -103,11 +103,13 @@ NSString *trimString(NSString *string)
 - (void)publishService
 {
     [transferSocket disconnect];
-    [self.statusLabel setStringValue:@"Waiting..."];
-    [self.startButton setEnabled:NO];
+    transferSocket = nil;
+
     [self.retryButton setEnabled:NO];
+    [self.progressIndicator setIndeterminate:YES];
     [self.progressIndicator startAnimation:self];
 
+    listenSocket = [[GCDAsyncSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
     BOOL ret = [listenSocket acceptOnPort:0 error:nil];
     assert(ret);
 
@@ -120,10 +122,15 @@ NSString *trimString(NSString *string)
     [netService publish];
 }
 
-- (void)socket:(GCDAsyncSocket *)sock didAcceptNewSocket:(GCDAsyncSocket *)newSocket
+- (void)cleanListening
 {
     [netService stop];
-    [sock disconnect];
+    [listenSocket disconnect];
+}
+
+- (void)socket:(GCDAsyncSocket *)sock didAcceptNewSocket:(GCDAsyncSocket *)newSocket
+{
+    [self cleanListening];
     [self.retryButton setEnabled:YES];
 
     transferSocket = newSocket;
@@ -136,9 +143,26 @@ NSString *trimString(NSString *string)
         case kTagEstablish: {
             NSString *confirmInfo = [NSString stringWithUTF8Data:data];
             confirmInfo = trimString(confirmInfo);
-            [self.statusLabel setStringValue:[NSString stringWithFormat:@"Connected: %@", confirmInfo]];
-            [self.progressIndicator stopAnimation:self];
-            [self.startButton setEnabled:YES];
+
+            NSAlert *alert = [NSAlert alertWithMessageText:@"Connected"
+                                             defaultButton:@"Connect" alternateButton:@"Cancel" otherButton:nil
+                                 informativeTextWithFormat:@"Confirm info: %@", confirmInfo];
+            NSUInteger result = [alert runModal];
+            if (result != NSAlertDefaultReturn) {
+                [self publishService];
+            } else {
+                [self.progressIndicator stopAnimation:self];
+                transfer = [NSMutableArray array];
+                currentItem = nil;
+
+                for (id item in trackList) {
+                    NSString *data = [NSString stringWithFormat:@"%@ %lu\n",
+                                      item[@"File ID"], [item[@"Size"] unsignedLongValue]];
+                    [transferSocket writeData:[data UTF8Data] withTimeout:-1 tag:kTagFileList];
+                }
+                [transferSocket writeData:kNewLine withTimeout:-1 tag:kTagFileList];
+                [transferSocket readDataToData:kNewLine withTimeout:-1 tag:kTagDownloadRequest];
+            }
             break;
         }
 
@@ -147,21 +171,34 @@ NSString *trimString(NSString *string)
             fileId = trimString(fileId);
             if (![fileId isEqualToString:@""]) {
                 id item = trackFiles[fileId];
+                NSUInteger size = [item[@"Size"] unsignedLongValue];
+
+                [self.progressIndicator setIndeterminate:NO];
+                [self.progressIndicator setMaxValue:size];
+                [self.progressIndicator setDoubleValue:0];
+                [self.progressIndicator startAnimation:self];
+
                 NSData *fileData = [NSData dataWithContentsOfURL:item[@"Location"]];
-                if ([fileData length] != [item[@"Size"] unsignedLongValue]) {
+                if ([fileData length] != size) {
                     [NSApp terminate:self];
                 }
 
-                NSLog(@"Sending file: %@ (size: %lu)", fileId, [fileData length]);
+                [transfer addObject:item];
+                currentItem = item;
+                [self.trackTable reloadData];
                 [transferSocket writeData:fileData withTimeout:-1 tag:kTagSendFile];
 
                 unsigned char md5[16];
                 CC_MD5([fileData bytes], (CC_LONG) [fileData length], md5);
                 [transferSocket writeData:[NSData dataWithBytes:md5 length:sizeof(md5)]
-                              withTimeout:-1 tag:kTagSendFile];
+                              withTimeout:-1 tag:kTagSendFileHash];
 
                 [transferSocket readDataToData:kNewLine withTimeout:-1 tag:kTagDownloadRequest];
             } else {
+                [self.progressIndicator setIndeterminate:YES];
+                [self.progressIndicator startAnimation:self];
+                currentItem = nil;
+
                 // send playlist
                 for (NSString *name in playlistData) {
                     NSString *nameData = [NSString stringWithFormat:@"%@\n", name];
@@ -180,41 +217,51 @@ NSString *trimString(NSString *string)
         default:
             break;
     }
+
+    [self.trackTable reloadData];
+}
+
+- (void)socket:(GCDAsyncSocket *)sock didWritePartialDataOfLength:(NSUInteger)partialLength tag:(long)tag
+{
+    switch (tag) {
+        case kTagSendFile:
+            [self.progressIndicator incrementBy:partialLength];
+            break;
+
+        default:
+            break;
+    }
+}
+
+- (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err
+{
+    if (sock == transferSocket)
+        [self publishService];
 }
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-    return [trackList count];
+    return [transfer count];
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn
             row:(NSInteger)rowIndex
 {
     NSString *identifier = [aTableColumn identifier];
-    id data = trackList[rowIndex];
+    id data = transfer[rowIndex];
     if ([identifier isEqualToString:@"status"]) {
-        return [NSImage imageNamed:NSImageNameStatusNone];
+        return [NSImage imageNamed:
+                data == currentItem ? NSImageNameStatusPartiallyAvailable : NSImageNameStatusAvailable];
     } else if ([identifier isEqualToString:@"name"]) {
         return data[@"Name"];
     } else if ([identifier isEqualToString:@"size"]) {
         return humanReadableBytes([data[@"Size"] unsignedLongValue], NO);
-    } else if ([identifier isEqualToString:@"file"]) {
-        return data[@"File ID"];
     }
     return nil;
 }
 
 - (IBAction)doRetry:(id)sender {
     [self publishService];
-}
-
-- (IBAction)startSync:(id)sender {
-    for (id item in trackList) {
-        NSString *data = [NSString stringWithFormat:@"%@ %lu\n", item[@"File ID"], [item[@"Size"] unsignedLongValue]];
-        [transferSocket writeData:[data UTF8Data] withTimeout:-1 tag:kTagFileList];
-    }
-    [transferSocket writeData:kNewLine withTimeout:-1 tag:kTagFileList];
-    [transferSocket readDataToData:kNewLine withTimeout:-1 tag:kTagDownloadRequest];
 }
 
 @end

@@ -20,16 +20,16 @@
     NSMutableArray *trackList;
     NSMutableDictionary *trackFiles;
     NSMutableDictionary *playlistData;
+
+    id currentItem;
+    NSMutableArray *transfer;
 }
 
 @property (assign) IBOutlet NSWindow *window;
 @property (weak) IBOutlet NSTableView *trackTable;
 @property (weak) IBOutlet NSProgressIndicator *progressIndicator;
-@property (weak) IBOutlet NSButton *startButton;
 @property (weak) IBOutlet NSButton *retryButton;
-@property (weak) IBOutlet NSTextField *statusLabel;
 
 - (IBAction)doRetry:(id)sender;
-- (IBAction)startSync:(id)sender;
 
 @end
