@@ -58,8 +58,9 @@ public class SyncerClient implements Runnable {
 
 	@Override
 	public void run() {
+		Socket socket = null;
 		try {
-			Socket socket = new Socket(dstAddress, dstPort);
+			socket = new Socket(dstAddress, dstPort);
 			in = new BufferedInputStream(socket.getInputStream());
 			out = new PrintStream(socket.getOutputStream());
 
@@ -74,6 +75,12 @@ public class SyncerClient implements Runnable {
 			receivePlaylists();
 		} catch (IOException e) {
 			listener.onClientError(e);
+		} finally {
+			if (socket != null) {
+				try {
+					socket.close();
+				} catch (IOException e) { }
+			}
 		}
 	}
 
