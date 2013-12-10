@@ -1,0 +1,3 @@
+[submodule "SyncerServer/CocoaAsyncSocket"]
+	path = SyncerServer/CocoaAsyncSocket
+	url = https://github.com/robbiehanson/CocoaAsyncSocket.git
